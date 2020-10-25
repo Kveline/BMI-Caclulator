@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-app.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyBZ_w-7Lkox4EQXO4TwnkbWnEJM1MISXnE",
+            authDomain: "bmiapp-2d54a.firebaseapp.com",
+            databaseURL: "https://bmiapp-2d54a.firebaseio.com",
+            projectId: "bmiapp-2d54a",
+            storageBucket: "bmiapp-2d54a.appspot.com",
+            messagingSenderId: "229300007645",
+            appId: "1:229300007645:web:01163f040374ccc951a134"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    <!-- library firestore -->
+    <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-firestore.js"></script>
+
+</head>
+
+<body>
+    <h1 id="judul">Kalkulator BMI</h1>
+
+    <div class="box">
+
+        <p class="judul-input">Berat Badan (Kg)</p>
+        <input placeholder="Masukan Berat badan anda" id="berat-badan" type="number">
+
+        <p class="judul-input">Tinggi Badan (Cm)</p>
+        <input style="margin-bottom: 20px;" id="tinggi-badan" placeholder="Masukan Tinggi badan anda" id=""
+            type="number">
+
+        <button onclick="hitungBMI()">Hitung BMI</button>
+    </div>
+
+
+    <div class="box">
+        <h1 id="judul">Hasil</h1>
+
+        <div class="box-hasil">
+            <span id="hasil-perhitungan">...</span> <br>
+            <span id="keterangan">...</span>
+        </div>
+
+
+    </div>
+</body>
+<script>
+    //inisialisasi database server
+    var db = firebase.firestore();
+    var bmidata = db.collection("bmi");
+    
+    //fungsi untuk menghitung BMI dan menghubungkan database server
+    function hitungBMI() {
+        var tinggiBadan = document.getElementById('tinggi-badan').value;
+        var beratBadan = document.getElementById('berat-badan').value;
+        var kode;
+        
+        if (tinggiBadan === '' || beratBadan === '') {
+            alert('Silahkan input terlebih dahulu berat badan dan tinggi badan anda')
+        } else {
+            //rumus BMI
+            tinggiBadan = tinggiBadan / 100;
+            let nilaiBMI = beratBadan / (tinggiBadan * tinggiBadan);
+
+            //penentuan kode, untuk menentukan keterangan apa yang akan diambil di database
+            if (nilaiBMI < 17) kode = 1;
+            else if (nilaiBMI >= 17 && nilaiBMI <= 18.4) kode = 2;
+            else if (nilaiBMI > 18.4 && nilaiBMI <= 25) kode = 3;
+            else kode = 4;
+            
+            //memanggil database server untuk mendapatkan keterangan dari nilai BMI 
+            bmidata.where("kode", "==", kode)
+                .get()
+                .then(function (querySnapshot) {
+                    querySnapshot.forEach(function (doc) {
+                        console.log(doc.data().ket);
+
+                        //mengeluarkan hasil
+                        document.getElementById('hasil-perhitungan').innerText = parseFloat(nilaiBMI.toPrecision(2));;
+                        document.getElementById('keterangan').innerText = doc.data().ket;
+                    });
+                })
+                .catch(function (error) {
+                    console.log("Error getting documents: ", error);
+                });
+
+
+        }
+
+
+
+    }
+</script>
+
+
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+
+    #judul {
+        text-align: center;
+        color: #06070D;
+        font-size: 26px;
+        margin-top: 20px;
+    }
+
+    .box {
+        background: #FFFFFF;
+        box-shadow: 2px 0px 10px rgba(181, 189, 208, 0.8);
+        padding: 20px 20px;
+        border-radius: 10px;
+        width: 410px;
+        margin: 30px auto;
+    }
+
+    input {
+        font-size: 16px;
+        outline: none;
+        padding: 10px 20px;
+        width: 85%;
+        border-radius: 8px;
+        border: 1px solid #D6D6D6;
+        letter-spacing: 0.03em;
+        color: #06070D;
+    }
+
+    button {
+        border-radius: 8px;
+        border: none;
+        background-color: #2196f3;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        padding: 10px 20px;
+        margin: 40px 0px;
+        display: block;
+        margin: auto;
+        outline: none;
+    }
+
+    .judul-input {
+        margin-bottom: 6px;
+        color: #06070D;
+        font-weight: bold;
+    }
+
+    .box-hasil {
+        text-align: center;
+    }
+</style>
+
+</html>
